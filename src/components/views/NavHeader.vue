@@ -16,7 +16,7 @@
                   <router-link to="/kakaomaporder" title="Home">소개</router-link>
                 </li>
                 <li class="active">
-                  <router-link to="/test" title="Home">이용방법</router-link>
+                  <router-link to="/kakaomap" title="Home">이용방법</router-link>
                 </li>
                 <li class="has-sub">
                   <a href="/board" title="board">게시판</a>

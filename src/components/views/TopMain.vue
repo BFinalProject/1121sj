@@ -8,7 +8,7 @@
               <strong>데이트 코스추천</strong><br />
               <h2>AI가 추천하는 최적화된 데이트</h2>
             </h1>
-            <a href="/kakaomap" class="btn btn-white"
+            <a href="/kakaomaps" class="btn btn-white"
               >시작하기<i class="fa fa-plus"></i
             ></a>
           </div>

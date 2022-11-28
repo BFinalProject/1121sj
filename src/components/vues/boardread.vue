@@ -117,7 +117,7 @@ export default {
 
       let send = {
         content: vm.comments,
-        // username : "sky6548"
+        username : "sky6548"
       };
 
       console.log(String(this.click_id));

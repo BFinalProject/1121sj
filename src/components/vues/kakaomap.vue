@@ -149,10 +149,12 @@
         </div>
       </div>
       <div style="margin-top: 50px;">
-        <button @click="displayMarker(markerPositions2)">마커 선택</button>
+        <button @click="displayMarker(data)">마커 선택</button>
+        <button @click="display(markerPositions2)">마커 선택2</button>
         <button @click="displayMarker([])">마커 삭제</button>
-        <button @click="dataset()">데이타</button>
+        <button @click="displayMarker2(data)">데이타</button>
         <button @click="Overlaydata()">데이타2</button>
+        <!-- 지금내가쓰고있는게 오버레이 데이타임 -->
       </div>
     </div>
 
@@ -175,11 +177,12 @@
 
 <script>
 import Axios from "axios";
-
+import $ from "jquery";
 export default {
   name: "kakaomap",
   data() {
     return {
+      map: null,
       data2: [],
       checkedemotion: [],
 
@@ -188,10 +191,10 @@ export default {
         [37.483987091628535, 126.7830868366494],
         [37.46851044224279, 126.797275939562]
       ],
-      markerPositions1: [
-        [37.499590490909185, 127.0263723554437],
-        [37.499427948430814, 127.02794423197847],
-        [37.498553760499505, 127.02882598822454]
+      data: [
+        { x: 37.482802136930516, y: 126.79564879005665 },
+        { x: 37.483987091628535, y: 126.7830868366494 },
+        { x: 37.46851044224279, y: 126.797275939562 }
       ],
       markerPositions2: [
         [37.499590490909185, 127.0263723554437],
@@ -202,36 +205,54 @@ export default {
         [37.49754540521486, 127.02546694890695],
         [37.49646391248451, 127.02675574250912]
       ],
+
+      location: [],
+      markers: [],
       markers: [],
 
-      infowindow: [
-        [37.499590490909185, 127.0263723554437],
-        [37.499427948430814, 127.02794423197847],
-        [37.498553760499505, 127.02882598822454],
-        [37.497625593121384, 127.02935713582038],
-        [37.49629291770947, 127.02587362608637],
-        [37.49754540521486, 127.02546694890695],
-        [37.49646391248451, 127.02675574250912]
-      ],
+
       // position:[]
 
     };
   },
+  // let mapContainer = document.getElementById('map') // 지도를 표시할 div 
+  //     let mapOption = {
+  //         center: new kakao.maps.LatLng(37.492413, 126.824126), // 지도의 중심좌표
+  //         level: 5 // 지도의 확대 레벨
+  //       };
 
+      // let map = new kakao.maps.Map(mapContainer, mapOption);
   mounted() {
+    // 이 이프문은 무슨이프문임 윈도우 카카오랑 그리고 카카오맵은 뭔뜻임 이건 따온거라 정확하게모르겟음;;
     if (window.kakao && window.kakao.maps) {
       this.initMap();
     } else {
       const script = document.createElement("script");
       /* global kakao */
-      script.onload = () => kakao.maps.load(this.initMap);
+      // 이 스크립트 어딨어? 인잇맵 ? ㅇㅇ스크립트 온로드 한 파일 어딨어
+       script.onload = () => kakao.maps.load(this.initMap); 
+      // 여기서도만들고 ㅇㅇ 여기서 만든거랑 호출할때 불려오는거 그래서 맵이 2개라고 말한거임ㅁ 그래서 호출하는 부분에서 맵을 지우려고햇는데 안되더라고
+      // 그걸왜지우는데? 그스크립트안에 무슨기능있냐? 그스크립트에선 오버레이, 마커 , 마커 이어주는 라인 ,마커 이미지 변경 인데 거기서도 새로운 맵을 만드니까 그 새로운 맵을 만드는 매소드만 지워서 마운트된 맵가지고 컨트롤 하려고햇는데 안되더라고
+      // 그스크립트는 니가만든거야 아니면 어디서가져온거야 그 카카오 소스에서 가지고 오긴햇는데 내가 원하는 것들 섞은거지 그럼 니가원하는 기능을 뷰에다써야지 왜 js 에써? ???? 함수로 만들어서 버튼눌럿을대 호출이 되야하니까
+      // 뷰는 그냥 js 기반이라 그냥 js 코드도됨. 그 함수안에 코드를 포이치에 쳐넣으면 작동하지않을까?
+      // 그리고 document.getElementById('id명').onclick();  이런식으로 <- 강제 온클릭 이벤트도걸수있꼬
+
+      // 왜 굳이 스크립트를 만들어서 그걸 붙여 여기에다가 스크립트 쓰라고만든건데
+
+      // 애초부터 마운트시점도 달라
+      // 일반 window dom 이랑 뷰 dom 이랑 달라. 
+
+      // 결국엔 스크립트를 니가 어디선가 불러올 때 뷰dom 이랑 불일치하니까 불러오지도못하거나 그냥 덮어씌워짐
+      // 그냥 그 js 안에 있는 기능을 여기서 함수하나 만들어서 호출하는게 났지 그리고 v-on:change= "함수명(data)" 써서 데이터값 바뀌거나 클릭하면 함수작동하게할수있어. 이거아니면 v-on:click 도있고 
+      // js 지우고 그안에있는 함수들만 들고와서 따로붙이셈
+
       script.src =
         "//dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=adfe893e046c16c34558d22483c0563d";
       document.head.appendChild(script);
     }
 
 
-    this.test();
+    // this.test();
   },
 
   methods: {
@@ -271,6 +292,7 @@ export default {
         center: new kakao.maps.LatLng(33.450701, 126.570667),
         level: 5
       };
+      // 아뭐야 그냥 여기서 돌린거임? ㅇㅇ 그럼 이닛맵에 붙이면되잖아 왜 함수를 또호출해
       //지도 객체를 등록합니다.
       //지도 객체는 반응형 관리 대상이 아니므로 initMap에서 선언합니다.
       this.map = new kakao.maps.Map(container, options);
@@ -292,7 +314,7 @@ export default {
 
       const positions = markerPositions.map(
         position => new kakao.maps.LatLng(...position)
-
+        
       );
 
       if (positions.length > 0) {
@@ -313,6 +335,7 @@ export default {
       }
     },
 
+
     test: function () {
       // let vm = this;
 
@@ -330,7 +353,7 @@ export default {
         console.log(data);
       });
     },
-
+// 이게지금 니가쓰는거임? ㄴㄴ 지금은 안쓰지 접때 너가 만들어준거야 옛날에
     displayInfoWindow() {
       let data = [
         [37.482802136930516, 126.79564879005665],
@@ -359,25 +382,9 @@ export default {
         this.map.setCenter(iwPosition);
       });
       InfoWindow.open(map, marker);
-      //       for(let i=0; i<data.length; i++){
-
-      //         var iwContent = '<div style="padding:5px;">Hello World!</div>', // 인포윈도우에 표출될 내용으로 HTML 문자열이나 document element가 가능합니다.
-      //         iwPosition = new kakao.maps.LatLng(data[i][0],data[i][1],data[i][2],), //인포윈도우 표시 위치입니다.
-      //         iwRemoveable = true; // removeable 속성을 ture 로 설정하면 인포윈도우를 닫을 수 있는 x버튼이 표시됩니다.
-      //         console.log(data)
-      // }
-
-      // if (this.infowindow && this.infowindow.getMap()) {
-      //   //이미 생성한 인포윈도우가 있기 때문에 지도 중심좌표를 인포윈도우 좌표로 이동시킨다.
-
-      //   this.map.setCenter(this.infowindow.getPosition());
-      //   return;
-      // }
-      // console.log(this.infowindow)
-
       console.log(this.infowindow);
     },
-
+//데이타 
     dataset() {
       let data = [
         { x: 37.482802136930516, y: 126.79564879005665, text: "test" },
@@ -393,7 +400,7 @@ export default {
         };
       let map = new kakao.maps.Map(mapContainer, mapOption); // 지도를 생성합니다
 
-
+// 여기서도만들고 근데 여기서 만든건 함수라서 호출안하면 안만들어지는거아냐 ? ㄱㄷ
       let imageSrc = 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png', // 마커이미지의 주소입니다    
         imageSize = new kakao.maps.Size(64, 69), // 마커이미지의 크기입니다
         imageOption = { offset: new kakao.maps.Point(27, 69) }; // 마커이미지의 옵션입니다. 마커의 좌표와 일치시킬 이미지 안에서의 좌표를 설정합니다.
@@ -460,20 +467,88 @@ export default {
       // });
     },
 
-    Overlaydata: function () {
-      let data = [
-        { x: 37.482802136930516, y: 126.79564879005665},
-        { x: 37.483987091628535, y: 126.7830868366494},
-        { x: 37.46851044224279, y: 126.797275939562}
-      ];
+    displayMarker2(markerPositions) {
 
+      let imageSrc = 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png', // 마커이미지의 주소입니다    
+        imageSize = new kakao.maps.Size(64, 69), // 마커이미지의 크기입니다
+        imageOption = { offset: new kakao.maps.Point(27, 69) }; // 마커이미지의 옵션입니다. 마커의 좌표와 일치시킬 이미지 안에서의 좌표를 설정합니다.
+
+      // 마커의 이미지정보를 가지고 있는 마커이미지를 생성합니다
+      let markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption)
+
+
+      if (this.markers.length > 0) {
+        this.markers.forEach(marker => marker.setMap(null));
+        
+      }
+
+      const positions = markerPositions.map(
+        position => new kakao.maps.LatLng(...position)
+
+      );
+
+      if (positions.length > 0) {
+        this.markers = positions.map(
+          position =>
+            new kakao.maps.Marker({
+              map: this.map,
+              image: markerImage,
+              position
+            })
+        );
+        console.log(markerPositions)
+        markerPositions.forEach(element => {
+      let content = `<div class= 'customoverlay'>` +
+          '  <a href="https://map.kakao.com/link/map/11394059" target="_blank">' +
+          '    <span class="title">구의야구공원</span>' +
+          '  </a>' +
+          '</div>';
+
+          let position2 = new kakao.maps.LatLng(element);
+        console.log(position2)
+        console.log(markerPositions)
+
+
+        // 커스텀 오버레이를 생성합니다
+        let customOverlay = new kakao.maps.CustomOverlay({
+          map: map,
+          position: position2,
+          content: content,
+          yAnchor: 1
+        });
+        });
+        
+        const bounds = positions.reduce(
+          (bounds, latlng) => bounds.extend(latlng),
+          new kakao.maps.LatLngBounds()
+        ); 
+
+        this.map.setBounds(bounds);
+      }
+    },
+
+//데이타2
+
+    Overlaydata: function () {
+      let vm = this;
+      
+      // $("#map").empty();
+        
       let mapContainer = document.getElementById('map'), // 지도를 표시할 div 
         mapOption = {
-          center: new kakao.maps.LatLng(37.54699, 127.09598), // 지도의 중심좌표
-          level: 4 // 지도의 확대 레벨
+          center: new kakao.maps.LatLng(37.46851044224279, 126.797275939562), // 지도의 중심좌표
+          level: 3 // 지도의 확대 레벨
         };
+      let map = new kakao.maps.Map(mapContainer, mapOption); // 지도를 생성합니다
 
-      let map = new kakao.maps.Map(mapContainer, mapOption);
+      let data = [
+        { x: 37.482802136930516, y: 126.79564879005665 },
+        { x: 37.483987091628535, y: 126.7830868366494 },
+        { x: 37.46851044224279, y: 126.797275939562 }
+      ];
+      // 최초에 이함수 돌릴떄 맵을 생성하고 시작하는데 ㅇㅇ 그치 맵 만드는 함수가 이거니까 그랳서 지워볼려고햇는데 안되더라고
+      // 그니까 초기화 하면되는거잖아 그냥
+
 
       let imageSrc = 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png', // 마커이미지의 주소입니다    
         imageSize = new kakao.maps.Size(64, 69), // 마커이미지의 크기입니다
@@ -483,44 +558,200 @@ export default {
       let markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption)
 
       data.forEach(element => {
-        console.log(data);
-        console.log(element.x);
-        console.log(element.y);
-        markerPosition = new kakao.maps.LatLng(element.x, element.y); // 마커가 표시될 위치입니다
-  
+        console.log(element.x)
+        console.log(element.y)
+        console.log(data)
+        let markerPosition = new kakao.maps.LatLng(element.x, element.y); // 마커가 표시될 위치입니다
 
-      // 마커를 생성합니다
-      let marker = new kakao.maps.Marker({
-        position: markerPosition,
-        image: markerImage // 마커이미지 설정 
+        console.log(markerPosition)
+
+        // 마커를 생성합니다
+        let marker = new kakao.maps.Marker({
+          position: markerPosition,
+          image: markerImage // 마커이미지 설정 
+        });
+
+        // 마커가 지도 위에 표시되도록 설정합니다
+        marker.setMap(map);
+
+        // 커스텀 오버레이에 표출될 내용으로 HTML 문자열이나 document element가 가능합니다
+        let content = `<div class= 'customoverlay'>` +
+          '  <a href="https://map.kakao.com/link/map/11394059" target="_blank">' +
+          '    <span class="title">구의야구공원</span>' +
+          '  </a>' +
+          '</div>';
+
+        // 커스텀 오버레이가 표시될 위치입니다 
+        let position = new kakao.maps.LatLng(element.x, element.y);
+        console.log(element.x + "2")
+        console.log(element.y + "2")
+        console.log(data + "2")
+
+        // 커스텀 오버레이를 생성합니다
+        let customOverlay = new kakao.maps.CustomOverlay({
+          map: map,
+          position: position,
+          content: content,
+          yAnchor: 1
+        });
+        
+        var linePath = [
+        // { x: 37.482802136930516, y: 126.79564879005665 },
+        // { x: 37.483987091628535, y: 126.7830868366494 },
+        // { x: 37.46851044224279, y: 126.797275939562 }
+    // new kakao.maps.LatLng(element.x, element.y),
+    new kakao.maps.LatLng(37.482802136930516, 126.79564879005665),
+    new kakao.maps.LatLng(37.483987091628535, 126.7830868366494),
+    new kakao.maps.LatLng(37.46851044224279, 126.797275939562)
+    // console.log(element.x,element.y)
+    // 이 3개는 뭐임? 이거도 지금 변수로 넣어야하는데 안되가지고 강제로 마커 위치 넣어서 라인그린거임
+];
+// console.log(element.x,element.y);
+// let line = [new kakao.maps.LatLng(element.x, element.y)]
+// 지도에 표시할 선을 생성합니다
+var polyline = new kakao.maps.Polyline({
+    path: linePath, // 선을 구성하는 좌표배열 입니다
+    strokeWeight: 5, // 선의 두께 입니다
+    strokeColor: '#FFAE00', // 선의 색깔입니다
+    strokeOpacity: 0.7, // 선의 불투명도 입니다 1에서 0 사이의 값이며 0에 가까울수록 투명합니다
+    strokeStyle: 'solid' // 선의 스타일입니다
+});
+
+// 지도에 선을 표시합니다 
+polyline.setMap(map);  
+
+var points = [
+    new kakao.maps.LatLng(37.482802136930516, 126.79564879005665),
+    new kakao.maps.LatLng(37.483987091628535, 126.7830868366494),
+    new kakao.maps.LatLng(37.46851044224279, 126.797275939562)
+];
+
+// 지도를 재설정할 범위정보를 가지고 있을 LatLngBounds 객체를 생성합니다
+var bounds = new kakao.maps.LatLngBounds();    
+
+var i;
+for (i = 0; i < points.length; i++) {
+    // 배열의 좌표들이 잘 보이게 마커를 지도에 추가합니다
+    // LatLngBounds 객체에 좌표를 추가합니다
+    bounds.extend(points[i]);
+}
+
       });
 
-      // 마커가 지도 위에 표시되도록 설정합니다
-      marker.setMap(map);
+    },
+    Overlaymap: function () {
+      let vm = this;
+      
+      // $("#map").empty();
+        
+      let mapContainer = document.getElementById('map'), // 지도를 표시할 div 
+        mapOption = {
+          center: new kakao.maps.LatLng(37.46851044224279, 126.797275939562), // 지도의 중심좌표
+          level: 3 // 지도의 확대 레벨
+        };
+      let map = new kakao.maps.Map(mapContainer, mapOption); // 지도를 생성합니다
+
+      let data = [
+        { x: 37.482802136930516, y: 126.79564879005665 },
+        { x: 37.483987091628535, y: 126.7830868366494 },
+        { x: 37.46851044224279, y: 126.797275939562 }
+      ];
+      // 최초에 이함수 돌릴떄 맵을 생성하고 시작하는데 ㅇㅇ 그치 맵 만드는 함수가 이거니까 그랳서 지워볼려고햇는데 안되더라고
+      // 그니까 초기화 하면되는거잖아 그냥
+
+      let imageSrc = 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png', // 마커이미지의 주소입니다    
+        imageSize = new kakao.maps.Size(64, 69), // 마커이미지의 크기입니다
+        imageOption = { offset: new kakao.maps.Point(27, 69) }; // 마커이미지의 옵션입니다. 마커의 좌표와 일치시킬 이미지 안에서의 좌표를 설정합니다.
+
+      // 마커의 이미지정보를 가지고 있는 마커이미지를 생성합니다
+      let markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption)
+
+      data.forEach(element => {
+        console.log(element.x)
+        console.log(element.y)
+        console.log(data)
+        let markerPosition = new kakao.maps.LatLng(element.x, element.y); // 마커가 표시될 위치입니다
+
+        console.log(markerPosition)
+
+        // 마커를 생성합니다
+        let marker = new kakao.maps.Marker({
+          position: markerPosition,
+          image: markerImage // 마커이미지 설정 
+        });
+
+        // 마커가 지도 위에 표시되도록 설정합니다
+        marker.setMap(map);
 
 
-      // 커스텀 오버레이에 표출될 내용으로 HTML 문자열이나 document element가 가능합니다
-      let content = `<div class= 'customoverlay'>` +
-        '  <a href="https://map.kakao.com/link/map/11394059" target="_blank">' +
-        '    <span class="title">구의야구공원</span>' +
-        '  </a>' +
-        '</div>';
+        // 커스텀 오버레이에 표출될 내용으로 HTML 문자열이나 document element가 가능합니다
+        let content = `<div class= 'customoverlay'>` +
+          '  <a href="https://map.kakao.com/link/map/11394059" target="_blank">' +
+          '    <span class="title">구의야구공원</span>' +
+          '  </a>' +
+          '</div>';
 
-      // 커스텀 오버레이가 표시될 위치입니다 
-      let position = new kakao.maps.LatLng(element.x, element.y);
+        // 커스텀 오버레이가 표시될 위치입니다 
+        let position = new kakao.maps.LatLng(element.x, element.y);
+        console.log(element.x + "2")
+        console.log(element.y + "2")
+        console.log(data + "2")
 
-      // 커스텀 오버레이를 생성합니다
-      let customOverlay = new kakao.maps.CustomOverlay({
-        map: map,
-        position: position,
-        content: content,
-        yAnchor: 1
+        // 커스텀 오버레이를 생성합니다
+        let customOverlay = new kakao.maps.CustomOverlay({
+          map: map,
+          position: position,
+          content: content,
+          yAnchor: 1
+        });
+        
+        var linePath = [
+        // { x: 37.482802136930516, y: 126.79564879005665 },
+        // { x: 37.483987091628535, y: 126.7830868366494 },
+        // { x: 37.46851044224279, y: 126.797275939562 }
+    // new kakao.maps.LatLng(element.x, element.y),
+    new kakao.maps.LatLng(37.482802136930516, 126.79564879005665),
+    new kakao.maps.LatLng(37.483987091628535, 126.7830868366494),
+    new kakao.maps.LatLng(37.46851044224279, 126.797275939562)
+    // console.log(element.x,element.y)
+    // 이 3개는 뭐임? 이거도 지금 변수로 넣어야하는데 안되가지고 강제로 마커 위치 넣어서 라인그린거임
+];
+// console.log(element.x,element.y);
+// let line = [new kakao.maps.LatLng(element.x, element.y)]
+// 지도에 표시할 선을 생성합니다
+var polyline = new kakao.maps.Polyline({
+    path: linePath, // 선을 구성하는 좌표배열 입니다
+    strokeWeight: 5, // 선의 두께 입니다
+    strokeColor: '#FFAE00', // 선의 색깔입니다
+    strokeOpacity: 0.7, // 선의 불투명도 입니다 1에서 0 사이의 값이며 0에 가까울수록 투명합니다
+    strokeStyle: 'solid' // 선의 스타일입니다
+});
+
+// 지도에 선을 표시합니다 
+polyline.setMap(map);  
+
+var points = [
+    new kakao.maps.LatLng(37.482802136930516, 126.79564879005665),
+    new kakao.maps.LatLng(37.483987091628535, 126.7830868366494),
+    new kakao.maps.LatLng(37.46851044224279, 126.797275939562)
+];
+
+// 지도를 재설정할 범위정보를 가지고 있을 LatLngBounds 객체를 생성합니다
+var bounds = new kakao.maps.LatLngBounds();    
+
+var i;
+for (i = 0; i < points.length; i++) {
+    // 배열의 좌표들이 잘 보이게 마커를 지도에 추가합니다
+    // LatLngBounds 객체에 좌표를 추가합니다
+    bounds.extend(points[i]);
+}
+
       });
-      // customOverlay.setMap(map, marker);
-      // customOverlay.open(map, marker);
-    });
-    }
+
+    },
+
   }
+  
 };
 </script>
 

@@ -13,6 +13,7 @@ import boardread from "./vues/boardread.vue";
 import boardwrite from "./vues/boardwrite.vue";
 import kakaologin from "./vues/kakaologin.vue";
 import kakaomaporder from "../kakaomapview/kakaomaporder.vue";
+import kakaomaps from "./vues/kakaomaps.vue";
 // import '../mainboard/css/bootstrap.min.css'
 // import '../mainboard/css/font-awesome.min.css'
 // import '../mainboard/css/style.css'
@@ -86,6 +87,13 @@ const routes = [
     component: kakaomap,
     name: "kakaomap",
     nameKor: "맵",
+    useYn: "Y",
+  },
+  {
+    path: "/kakaomaps",
+    component: kakaomaps,
+    name: "kakaomaps",
+    nameKor: "맵test",
     useYn: "Y",
   },
   {

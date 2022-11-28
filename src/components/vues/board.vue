@@ -184,11 +184,6 @@ export default {
             location.href="/boardread?boardId="+id; 
         },
         
-        
-        
-        
-        
-        
         //2 
         fnGetStat1List: function () {
             let vm = this;
